@@ -1,0 +1,7 @@
+.venv
+pyo3/target
+cython/build
+cython/*.pyd
+cython/*.c
+uv.lock
+random_str.txt

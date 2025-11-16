@@ -1,0 +1,2 @@
+maturin init
+maturin develop
