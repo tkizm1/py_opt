@@ -1,1 +1,1 @@
-random_str.txt filter=lfs diff=lfs merge=lfs -text
+random_str.7z.* filter=lfs diff=lfs merge=lfs -text
