@@ -42,7 +42,7 @@ Total Matches Found: 237
 ## the result of pyO3
 
 ```cmd
-python .\pyo3\test_kmp_pyo3.py
+python pyo3\test_kmp_pyo3.py
 ```
 
 ```
