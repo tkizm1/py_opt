@@ -228,13 +228,15 @@ $$ \text{Chunk Size} = \frac{\text{Total Length of Text}}{\text{Number of Chunks
 ```python
 # 1. get total length of the text
 with open('random_str.txt', 'r') as f:
-    f.seek(0, 2)  # Move the cursor to the end of the
-    total_length = f.tell()
+    FILE_CONTENT=f.read()
 # 2. calculate chunk size
-num_chunks = os.cpu_count() or 4  # Default to 4 if os.cpu_count() returns None
-overlap_size = len(pattern) - 1
-chunk_size = total_length // num_chunks + overlap_size
+NUM_PROCESSES = 4 # os.cpu_count()
+L = len(pattern)
+OVERLAP_SIZE = len(pattern) - 1
+STANDARD_CHUNK_SIZE = len(FILE_CONTENT) // NUM_PROCESSES + OVERLAP_SIZE
+print(STANDARD_CHUNK_SIZE)
 ```
+
 ---
 layoutClass: gap-16
 ---
@@ -352,12 +354,28 @@ layoutClass: gap-16
 ### Which is GIL?
 The Global Interpreter Lock (GIL) is a mutex that protects access to Python objects, preventing multiple native threads from executing Python bytecodes at once. This lock is necessary because CPython's memory management is not thread-safe. While the GIL simplifies the implementation of CPython, it can be a bottleneck in CPU-bound and multithreaded programs, as it effectively serializes execution of threads.
 
+### free threading python 3.14
+
+With the release of Python 3.14, the Global Interpreter Lock (GIL) has been redesigned to improve multithreading performance. The new GIL implementation aims to reduce contention and improve the efficiency of thread switching, allowing for better utilization of multiple CPU cores in multithreaded applications. This redesign is expected to enhance the performance of CPU-bound tasks that rely on multithreading, making Python more competitive for parallel processing workloads.
+
+https://github.com/facebookexperimental/free-threading-benchmarking
+
+---
+layoutClass: gap-16
+---
+
 ### Pros and Cons of GIL
+
 **Pros:**
 - Simplicity: The GIL simplifies the implementation of the Python interpreter, making it easier
   to manage memory and object lifetimes.
 - Safety: It prevents race conditions and ensures that only one thread executes Python bytecode at a time,
   which can prevent certain types of bugs.
+
+**Cons:**
+- Performance Bottleneck: In CPU-bound multithreaded programs, the GIL can become
+  a significant performance bottleneck, as threads must wait for the GIL to be released before they can execute.
+- Limited Multithreading: The GIL limits the effectiveness of multithreading in Python, as threads cannot run in parallel on multiple CPU cores.
 
 ---
 layoutClass: gap-16
@@ -420,7 +438,62 @@ layoutClass: gap-16
 ---
 layoutClass: gap-16
 ---
+# Compare Cython and pyo3
+While Cython has long been the standard for optimizing Python, Rust (specifically combined with PyO3 and Maturin) is increasingly recommended for modern high-performance Python extensions.
+
+1. Memory Safety (The "Killer Feature")
+
+    Cython: Cython is essentially a superset of Python that compiles to C. If you make a mistake with pointers or memory management in Cython (especially when interacting with C arrays), you can cause segmentation faults, buffer overflows, and memory leaks. Debugging these crashes is notoriously difficult.
+
+    Rust: Rust guarantees memory safety at compile-time through its ownership and borrow checker system. It effectively eliminates entire classes of bugs (like null pointer dereferences and data races) without needing a garbage collector. If your Rust code compiles, it is almost certainly memory-safe.
+
+2. Superior Tooling and Package Management
+
+    Cython: Building Cython extensions usually involves complex setup.py configurations, dependency on specific C compilers (gcc, clang, MSVC), and dealing with cryptic linker errors. Managing dependencies is manual and painful.
+
+    Rust: Rust has Cargo, arguably the best package manager in the industry.
+
+        Maturin (a tool for building Python wheels with Rust) integrates seamlessly with Cargo. You can often compile and install a high-performance Rust module with zero configuration, just by running maturin develop.
+---
+layoutClass: gap-16
+---
+
+3. You need robust parallelism (multi-threading).
+
+  Cython: While Cython can release the GIL (Global Interpreter Lock) to achieve parallelism, you are responsible for thread safety. You must manually manage locks and synchronization, which is error-prone and hard to get right.
+
+  Rust: Rust's type system understands threading. The compiler will refuse to compile code that introduces data races. This allows you to write highly parallel code (using libraries like Rayon) that fully utilizes multi-core CPUs with confidence that it won't crash due to race conditions.
+
+4. You prefer modern tooling (Cargo/Maturin) over makefiles and C compilers.
+
+Cython: Cython is a hybrid syntax—a mix of Python and C. It lacks many modern programming language features.
+
+Rust: Rust is a fully-featured modern system language. It has powerful abstractions (traits, generics, pattern matching), a rich standard library, and a vibrant ecosystem of crates (libraries). If you enjoy writing idiomatic, expressive code, Rust is a joy to work with.
+
+---
+layoutClass: gap-16
+---
+
+# Some tools 
+
+## uv: 
+![alt text](./assets/03aa9163-1c79-4a87-a31d-7a9311ed9310.svg)
+A lightning-fast CLI tool for searching and processing text files, built with Rust and PyO3.
+
+https://docs.astral.sh/uv/
+
+## slidev:
+
+Slidev is a powerful tool for creating presentations using Markdown and Vue.js. It allows developers to create visually appealing slides with ease, leveraging the flexibility of web technologies.
+
+https://github.com/slidevjs/slidev
+
+---
+layoutClass: gap-16
+---
 
 Thank you for your attention! The sharing slides and code examples can be found at:
 
 https://github.com/tkizm1/py_runner
+
+# Bye!
