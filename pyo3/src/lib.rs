@@ -62,9 +62,9 @@ fn run_parallel_search_rs(
     // 3. 关键步骤：释放 GIL
     // 在进入 Rayon 并行计算之前，我们让出 Python GIL。
     // 这允许其他 Python 线程在 Rust 线程进行计算时运行。
-    let final_matches = Python::with_gil(|py| {
-        // 使用 py.allow_threads 释放 GIL，并在闭包内执行 Rust 多线程代码
-        py.allow_threads(|| {
+    // we can use attach and detach to manage GIL in newer version
+    let final_matches = Python::attach(|py| {
+        py.detach(|| {
             // 使用 Rayon 进程池执行任务
             let all_results: Vec<Vec<usize>> = tasks.par_iter()
                 .map(|&(start, end)| {
